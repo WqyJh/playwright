@@ -247,7 +247,7 @@ bundles.push({
   modulePath: 'packages/playwright/bundles/babel',
   outdir: 'packages/playwright/lib/transform',
   entryPoints: ['src/babelBundleImpl.ts'],
-  external: ['playwright'],
+  external: ['@wqyjh/playwright'],
 });
 
 bundles.push({
@@ -461,6 +461,92 @@ function copyXdgOpen() {
 
 // Copy xdg-open after bundles 'npm ci' has finished.
 steps.push(new CustomCallbackStep(copyXdgOpen));
+
+// Replace package names in built files
+function replacePackageNames() {
+  const fs = require('fs');
+  const path = require('path');
+
+  const packagesToFix = [
+    'packages/playwright/lib',
+    'packages/playwright-core/lib',
+    'packages/playwright-test/lib',
+    'packages/playwright-ct-core/lib',
+    'packages/playwright-firefox/lib',
+    'packages/playwright-webkit/lib',
+    'packages/playwright-chromium/lib',
+    'packages/playwright-client/lib',
+    'packages/playwright-browser-chromium/lib',
+    'packages/playwright-browser-firefox/lib',
+    'packages/playwright-browser-webkit/lib',
+    'packages/playwright-ct-react/lib',
+    'packages/playwright-ct-react17/lib',
+    'packages/playwright-ct-vue/lib',
+    'packages/playwright-ct-svelte/lib',
+  ];
+
+  for (const pkgPath of packagesToFix) {
+    const fullPath = path.join(ROOT, pkgPath);
+    if (!fs.existsSync(fullPath)) continue;
+
+    // Find all JS files
+    const findJsFiles = (dir) => {
+      const files = [];
+      const items = fs.readdirSync(dir, { withFileTypes: true });
+      for (const item of items) {
+        const fullPath = path.join(dir, item.name);
+        if (item.isDirectory()) {
+          files.push(...findJsFiles(fullPath));
+        } else if (item.isFile() && item.name.endsWith('.js')) {
+          files.push(fullPath);
+        }
+      }
+      return files;
+    };
+
+    const jsFiles = findJsFiles(fullPath);
+    for (const file of jsFiles) {
+      let content = fs.readFileSync(file, 'utf8');
+      let modified = false;
+
+      // Replace playwright-core with @wqyjh/playwright-core (including subpaths)
+      if (content.includes('playwright-core')) {
+        content = content.replace(/require\(["']playwright-core(\/[^"']*)?["']\)/g, (match, subpath) => {
+          return `require("@wqyjh/playwright-core${subpath || ''}")`;
+        });
+        content = content.replace(/from ["']playwright-core(\/[^"']*)?["']/g, (match, subpath) => {
+          return `from "@wqyjh/playwright-core${subpath || ''}"`;
+        });
+        // Also replace string literals
+        content = content.replace(/["']playwright-core["']/g, '"@wqyjh/playwright-core"');
+        modified = true;
+      }
+
+      // Replace playwright with @wqyjh/playwright (but not playwright-core)
+      if (content.includes('playwright')) {
+        content = content.replace(/require\(["']playwright(?!-core)(\/[^"']*)?["']\)/g, (match, subpath) => {
+          return `require("@wqyjh/playwright${subpath || ''}")`;
+        });
+        content = content.replace(/from ["']playwright(?!-core)(\/[^"']*)?["']/g, (match, subpath) => {
+          return `from "@wqyjh/playwright${subpath || ''}"`;
+        });
+        // Also handle @playwright/test references
+        content = content.replace(/require\(["']@playwright\/test["']\)/g, 'require("@wqyjh/playwright/test")');
+        content = content.replace(/from ["']@playwright\/test["']/g, 'from "@wqyjh/playwright/test"');
+        modified = true;
+      }
+
+      if (modified) {
+        fs.writeFileSync(file, content, 'utf8');
+        console.log('Updated package names in:', file);
+      }
+    }
+  }
+
+  console.log('==== Package names replaced in built files');
+}
+
+steps.push(new CustomCallbackStep(replacePackageNames));
 
 function pkgNameFromPath(p) {
   const i = p.split(path.sep);

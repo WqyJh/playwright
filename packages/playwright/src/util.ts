@@ -19,17 +19,17 @@ import path from 'path';
 import url from 'url';
 import util from 'util';
 
-import { parseStackFrame, sanitizeForFilePath, calculateSha1, isRegExp, isString, stringifyStackFrames } from 'playwright-core/lib/utils';
-import { debug, mime, minimatch } from 'playwright-core/lib/utilsBundle';
+import { parseStackFrame, sanitizeForFilePath, calculateSha1, isRegExp, isString, stringifyStackFrames } from '@wqyjh/playwright-core/lib/utils';
+import { debug, mime, minimatch } from '@wqyjh/playwright-core/lib/utilsBundle';
 
 import type { Location } from './../types/testReporter';
 import type { TestInfoErrorImpl } from './common/ipc';
 import type { StackFrame } from '@protocol/channels';
-import type { RawStack } from 'playwright-core/lib/utils';
+import type { RawStack } from '@wqyjh/playwright-core/lib/utils';
 import type { TestCase } from './common/test';
 
 const PLAYWRIGHT_TEST_PATH = path.join(__dirname, '..');
-const PLAYWRIGHT_CORE_PATH = path.dirname(require.resolve('playwright-core/package.json'));
+const PLAYWRIGHT_CORE_PATH = path.dirname(require.resolve('@wqyjh/playwright-core/package.json'));
 
 export function filterStackTrace(e: Error): { message: string, stack: string, cause?: ReturnType<typeof filterStackTrace> } {
   const name = e.name ? e.name + ': ' : '';

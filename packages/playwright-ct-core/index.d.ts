@@ -22,7 +22,7 @@ import type {
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
   BrowserContext,
-} from 'playwright/test';
+} from '@wqyjh/playwright/test';
 import type { InlineConfig } from 'vite';
 
 export type PlaywrightTestConfig<T = {}, W = {}> = Omit<BasePlaywrightTestConfig<T, W>, 'use'> & {
@@ -55,4 +55,4 @@ export function defineConfig(config: PlaywrightTestConfig, ...configs: Playwrigh
 export function defineConfig<T>(config: PlaywrightTestConfig<T>, ...configs: PlaywrightTestConfig<T>[]): PlaywrightTestConfig<T>;
 export function defineConfig<T, W>(config: PlaywrightTestConfig<T, W>, ...configs: PlaywrightTestConfig<T, W>[]): PlaywrightTestConfig<T, W>;
 
-export { expect, devices, Locator } from 'playwright/test';
+export { expect, devices, Locator } from '@wqyjh/playwright/test';

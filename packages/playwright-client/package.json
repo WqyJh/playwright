@@ -1,5 +1,5 @@
 {
-  "name": "@playwright/client",
+  "name": "@wqyjh/playwright-client",
   "private": true,
   "version": "0.0.0",
   "description": "A thin client for Playwright",
@@ -30,6 +30,6 @@
     "watch": "npm run esbuild -- --watch"
   },
   "dependencies": {
-    "playwright-core": "1.58.0-next"
+    "@wqyjh/playwright-core": "1.58.0-next-4"
   }
 }
